@@ -4,10 +4,12 @@
         <meta charset="utf-8"/>
         <title>GPU Rasterization for Real-time Spatial Aggregation over Arbitrary Polygons (WebGL Version)</title>  
         <script src="./main.js" defer></script>
-        <script src="./three.js" defer></script>
-        <script src="./assisLib/loadShader.js" defer></script>
+        <script src="./assisLib/three.js" defer></script>
+        <script src="./assisLib/initShader.js" defer></script>
+        <script src="./assisLib/Shader.js" defer></script>
+        <script src="./assisLib/draw.js"></script>
     </head>
-    <body>
+    <body onload="main()">
         <canvas id="canvas" style="width: 95%; height: 95%; position: fixed;"></canvas>
     </body>
 </html>

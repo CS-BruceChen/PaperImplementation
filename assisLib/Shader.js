@@ -1,33 +1,3 @@
-/*
-value's name 'vsSource' means vertex shader source
-value's name 'fsSource' means fragment shader source 
-value's name 'vsPath' means vertex shader file path
-value's name 'fsPath' means fragment shader file path
-*/ 
-
-
-async function loadShaderFile(filename) {
-
-    return new Promise((resolve, reject) => {
-        const loader = new THREE.FileLoader();
-
-        loader.load(filename, (data) => {
-            resolve(data);
-            //console.log(data);
-        });
-    });
-}
-
-async function getShaderString(filename) {
-
-    let val = ''
-    await this.loadShaderFile(filename).then(result => {
-        val = result;
-    });
-    //console.log(val);
-    return val;
-}
-
 class Shader{
     constructor(gl, vsSource, fsSource) {
         if(!gl){
@@ -79,13 +49,18 @@ class Shader{
     
 };
 
-async function initShader(gl,vsPath,fsPath) {
-
-
-    let vsSource = await getShaderString(vsPath);
-    let fsSource = await getShaderString(fsPath);
-
-    return new Shader(gl,vsSource,fsSource);
-
-}
-
+class ShaderInfo{
+  constructor(vsPath,fsPath,attributeVar,uniformVar){
+      this.vsPath = vsPath;
+      this.fsPath = fsPath;
+      if(Object.prototype.toString.call(attributeVar)!='[object Object]'
+      ||Object.prototype.toString.call(uniformVar)!='[object Object]') {
+          alert("ShaderInfo ERR::wrong type");
+          return;
+      }
+      this.shaderVarDescription = {
+          attribute : attributeVar,
+          uniform : uniformVar,
+      }
+  }
+};
