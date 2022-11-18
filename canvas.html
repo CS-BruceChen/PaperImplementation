@@ -10,6 +10,9 @@
         <script src="./assisLib/draw.js"></script>
     </head>
     <body onload="main()">
-        <canvas id="canvas" style="width: 500px; height: 500px; position: fixed;"></canvas>
+        <button onclick="drawPoint()" style="z-index: 2;">point</button>
+        <button onclick="drawPolygon()" style="z-index: 2;">polygon</button>
+        <!-- <button onclick="clearCanvas()" style="z-index: 2;">clear</button> -->
+        <canvas id="canvas" style="width: 800px; height: 450px; position: fixed;z-index: 1;border-style: solid;"></canvas>
     </body>
 </html>
