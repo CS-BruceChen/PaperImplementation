@@ -2,15 +2,17 @@ function main() {
     console.log('running');
     const gl = document.querySelector('#canvas').getContext('webgl');
     const testInfo = new ShaderInfo(
-        './vs.glsl',
-        './fs.glsl',
+        './shaderSrc/vs.glsl',
+        './shaderSrc/fs.glsl',
         {
             aPos : [
-                [0.0,0.5],
-                [-0.5,-0.5],
-                [0.5,-0.5]
+                [ 1.0, 1.0],
+                [-1.0, 1.0],
+                [ 1.0,-1.0],
+                [-1.0,-1.0]
             ],
             aColor : [
+                [1.0,1.0,1.0],
                 [1.0,0.0,0.0],
                 [0.0,1.0,0.0],
                 [0.0,0.0,1.0]

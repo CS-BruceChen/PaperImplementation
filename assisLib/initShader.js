@@ -48,7 +48,8 @@ function getShaderVarLocation(gl,type,shaderVarDescription,shaderProgram){
 
 function initVertexBuffers(gl,valueMatrix){
     var valueArray = [];
-    var valueDimension = valueMatrix[0];
+    var valueDimension = valueMatrix[0].length; 
+    var vertexNum = valueMatrix.length;
     for(var i = 0; i < valueMatrix.length; ++i){
         if(valueMatrix[i].length != valueDimension || valueDimension == 0) {
             alert("format ERR::make sure every groups of data has the same length");
@@ -69,14 +70,24 @@ function initVertexBuffers(gl,valueMatrix){
     return {
         dimension : valueDimension,
         buffer : buffer,
+        vertexNum : vertexNum
     };
 }
 
 function getVertexAttributeValues(gl,shaderVarDescription) {
     var varNameArray = Object.keys(shaderVarDescription['attribute']);
     var vertexAttributeValues = {};
+    var arrayToCheckVertexNum = [];
     for(var i = 0; i < varNameArray.length; ++i){
-        vertexAttributeValues[varNameArray[i]] = initVertexBuffers(gl,shaderVarDescription['attribute'][varNameArray[i]]);
+        var bufferObject = initVertexBuffers(gl,shaderVarDescription['attribute'][varNameArray[i]]);
+        vertexAttributeValues[varNameArray[i]] = bufferObject;
+        arrayToCheckVertexNum.push(bufferObject.vertexNum);
+    }
+    var firstElementValue = arrayToCheckVertexNum[0];
+    for(var i = 0; i < arrayToCheckVertexNum.length; ++i){
+        if(arrayToCheckVertexNum[i]!=firstElementValue) {
+            alert('ERR::num of vertex data is not consistent');
+        }
     }
     return vertexAttributeValues;
 }
