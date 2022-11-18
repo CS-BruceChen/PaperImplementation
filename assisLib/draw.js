@@ -28,12 +28,9 @@ function draw(gl,shader,uniformOperation) {
     gl.useProgram(shader.program);
     if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
 
-    // console.log(shader.vertexAttributeValues[attributeNameArray[0]].vertexNum);
-    // console.log('draw');
     {
         const offset = 0;
         const vertexCount = shader.vertexAttributeValues[attributeNameArray[0]].vertexNum;
-        // console.log(vertexCount);
         gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
     }
     

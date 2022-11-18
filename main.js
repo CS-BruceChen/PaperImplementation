@@ -1,5 +1,4 @@
 function main() {
-    console.log('running');
     const gl = document.querySelector('#canvas').getContext('webgl');
     const testInfo = new ShaderInfo(
         './shaderSrc/vs.glsl',
@@ -25,7 +24,4 @@ function main() {
     initShader(gl,testInfo).then((shader)=>{
         draw(gl,shader,()=>{});
     })
-    
-    // 
-    // console.log(shader);
 }
