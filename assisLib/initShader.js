@@ -3,13 +3,6 @@ value's name 'vsSource' means vertex shader source
 value's name 'fsSource' means fragment shader source 
 value's name 'vsPath' means vertex shader file path
 value's name 'fsPath' means fragment shader file path
-value's name 'shaderVarDescription' means a type of object like this
-{
-    attribute : {'aPos':[[1,1],[2,2]],'aColor':[],'aNorm':[]},
-    uniform : {},
-}
- 
-
 */ 
 
 
@@ -35,12 +28,11 @@ async function getShaderString(filename) {
     return val;
 }
 
-function getShaderVarLocation(gl,type,shaderVarDescription,shaderProgram){
-    var varArray = Object.keys(shaderVarDescription[type]);
+function getShaderVarLocation(gl,varNameArray,shaderProgram){
     var varLocation = {};
-    if(varArray.length != 0 && typeof(varArray)!="undefined") {
-        for(var i = 0; i < varArray.length; i++){
-            varLocation[varArray[i]] = gl.getAttribLocation(shaderProgram,varArray[i]);
+    if(varNameArray.length != 0 && typeof(varNameArray)!="undefined") {
+        for(var i = 0; i < varNameArray.length; i++){
+            varLocation[varNameArray[i]] = gl.getAttribLocation(shaderProgram,varNameArray[i]);
         }
     }
     return varLocation;
@@ -74,13 +66,13 @@ function initVertexBuffers(gl,valueMatrix){
     };
 }
 
-function getVertexAttributeValues(gl,shaderVarDescription) {
-    var varNameArray = Object.keys(shaderVarDescription['attribute']);
-    var vertexAttributeValues = {};
+function getVertexBuffer(gl,shaderVar) {
+    var varNameArray = Object.keys(shaderVar);
+    var vertexBuffer = {};
     var arrayToCheckVertexNum = [];
     for(var i = 0; i < varNameArray.length; ++i){
-        var bufferObject = initVertexBuffers(gl,shaderVarDescription['attribute'][varNameArray[i]]);
-        vertexAttributeValues[varNameArray[i]] = bufferObject;
+        var bufferObject = initVertexBuffers(gl,shaderVar[varNameArray[i]]);
+        vertexBuffer[varNameArray[i]] = bufferObject;
         arrayToCheckVertexNum.push(bufferObject.vertexNum);
     }
     var firstElementValue = arrayToCheckVertexNum[0];
@@ -89,7 +81,7 @@ function getVertexAttributeValues(gl,shaderVarDescription) {
             alert('ERR::num of vertex data is not consistent');
         }
     }
-    return vertexAttributeValues;
+    return vertexBuffer;
 }
 
 /**
@@ -101,7 +93,7 @@ function getVertexAttributeValues(gl,shaderVarDescription) {
 async function initShader(gl,shaderInfo) {
     var vsPath = shaderInfo.vsPath;
     var fsPath = shaderInfo.fsPath;
-    var shaderVarDescription = shaderInfo.shaderVarDescription;
+    var shaderVar = shaderInfo.shaderVar;
     
     let vsSource = await getShaderString(vsPath);
     let fsSource = await getShaderString(fsPath);
@@ -109,10 +101,9 @@ async function initShader(gl,shaderInfo) {
     const shader = new Shader(gl,vsSource,fsSource);
 
     const shaderObject = {
-        vertexAttributeValues : getVertexAttributeValues(gl,shaderVarDescription),
         program : shader.shaderProgram,
-        attribLocations : getShaderVarLocation(gl,'attribute',shaderVarDescription,shader.shaderProgram),
-        uniformLocations : getShaderVarLocation(gl,'uniform',shaderVarDescription,shader.shaderProgram),
+        attribLocations : getShaderVarLocation(gl,shaderVar['attribute'],shader.shaderProgram),
+        uniformLocations : getShaderVarLocation(gl,shaderVar['uniform'],shader.shaderProgram),
     };
     return shaderObject;//is a Promise
 }

@@ -1,4 +1,40 @@
-function draw(gl,shader,drawType,uniformOperation) {
+/*
+primitives应当是一个数组，里面存放了各种几何对象（PO : primitive object）
+一个典型的几何对象应当包含以下字段：
+
+eg: a point's PO
+{
+    type : 'point',
+    data : {
+        aPos : [
+            [1,0]
+        ],
+        aColor : [
+            [0.5,0.5,0.5]
+        ]
+    }
+}
+eg: a polygon's PO
+{
+    type : 'polygon',
+    data : {
+        aPos : [
+            [1,0],
+            [0,1],
+            [0.5,0.5],
+        ],
+        aColor : [
+            [0.5,0.5,0.5],
+            [0.5,0.5,0.5],
+            [0.5,0.5,0.5],
+        ]
+    }
+}
+当然，我这里的设想是，data对象的键名称和着色器的变量名保持一致，可能需要专门写一个构造primitives的函数？
+
+*/
+
+function draw(gl,shader,/*drawType,uniformOperation,*/primitives) {
     // gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
     // gl.clearDepth(1.0);                 // Clear everything
     // gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -12,36 +48,81 @@ function draw(gl,shader,drawType,uniformOperation) {
         region : gl.TRIANGLE_STRIP,
     }
 
-    var attributeNameArray = Object.keys(shader.vertexAttributeValues);
-    for(var i = 0; i < attributeNameArray.length; i++){
-        var attributeValueBuffer = shader.vertexAttributeValues[attributeNameArray[i]];
-        const dimension = attributeValueBuffer.dimension;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
+    for(var i = 0; i < primitives.length; ++i){
+        var primitiveObject = primitives[i];
+        var primitiveBuffers = getVertexBuffer(gl,primitiveObject.data);
+        var primitiveVarNames = Object.keys(primitiveBuffers);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, attributeValueBuffer.buffer);
-        gl.vertexAttribPointer(
-            shader.attribLocations[attributeNameArray[i]],
-            dimension,
-            type,
-            normalize,
-            stride,
-            offset);
-        gl.enableVertexAttribArray(shader.attribLocations[attributeNameArray[i]]);
+        for(var j = 0; j < primitiveVarNames.length; ++j){
+            const varName = primitiveVarNames[j];//means var name now
+            const bufferObject = primitiveBuffers[varName];//bufferObject means BufferObject for the var now
+            
+            const dimension = bufferObject.dimension;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, bufferObject.buffer);
+            gl.vertexAttribPointer(
+                shader.attribLocations[varName],
+                dimension,
+                type,
+                normalize,
+                stride,
+                offset);
+            gl.enableVertexAttribArray(shader.attribLocations[varName]);
+        }
+
+        gl.useProgram(shader.program);
+        // if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
+
+        {
+            // console.log('drawType:'+primitiveObject.type);
+            const glDrawType = glTypeMap[primitiveObject.type]
+            const offset = 0;
+            const vertexCount = primitiveBuffers[primitiveVarNames[0]].vertexNum;
+            gl.drawArrays(glDrawType, offset, vertexCount);
+
+            //unbind
+            gl.bindBuffer(gl.ARRAY_BUFFER,null);
+        }
+
+        
+        
     }
 
-    gl.useProgram(shader.program);
-    if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
 
-    {
-        console.log('drawType:'+drawType);
-        const glDrawType = glTypeMap[drawType];
-        const offset = 0;
-        const vertexCount = shader.vertexAttributeValues[attributeNameArray[0]].vertexNum;
-        gl.drawArrays(glDrawType, offset, vertexCount);
-    }
+
+    // for(var i = 0; i < attributeNameArray.length; i++){
+    //     var attributeValueBuffer = shader.vertexAttributeValues[attributeNameArray[i]];
+    //     const dimension = attributeValueBuffer.dimension;
+    //     const type = gl.FLOAT;
+    //     const normalize = false;
+    //     const stride = 0;
+    //     const offset = 0;
+
+    //     gl.bindBuffer(gl.ARRAY_BUFFER, attributeValueBuffer.buffer);
+    //     gl.vertexAttribPointer(
+    //         shader.attribLocations[attributeNameArray[i]],
+    //         dimension,
+    //         type,
+    //         normalize,
+    //         stride,
+    //         offset);
+    //     gl.enableVertexAttribArray(shader.attribLocations[attributeNameArray[i]]);
+    // }
+
+    // gl.useProgram(shader.program);
+    // if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
+
+    // {
+    //     console.log('drawType:'+drawType);
+    //     const glDrawType = glTypeMap[drawType];
+    //     const offset = 0;
+    //     const vertexCount = shader.vertexAttributeValues[attributeNameArray[0]].vertexNum;
+    //     gl.drawArrays(glDrawType, offset, vertexCount);
+    // }
     
     
 }

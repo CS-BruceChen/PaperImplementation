@@ -53,12 +53,12 @@ class ShaderInfo{
   constructor(vsPath,fsPath,attributeVar,uniformVar){
       this.vsPath = vsPath;
       this.fsPath = fsPath;
-      if(Object.prototype.toString.call(attributeVar)!='[object Object]'
-      ||Object.prototype.toString.call(uniformVar)!='[object Object]') {
-          alert("ShaderInfo ERR::wrong type");
+      if(Object.prototype.toString.call(attributeVar)!='[object Array]'
+      ||Object.prototype.toString.call(uniformVar)!='[object Array]') {
+          alert("ShaderInfo ERR::wrong type, parameters should be Array");
           return;
       }
-      this.shaderVarDescription = {
+      this.shaderVar = {
           attribute : attributeVar,
           uniform : uniformVar,
       }
