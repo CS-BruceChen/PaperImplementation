@@ -1,8 +1,10 @@
 /*
-value's name 'vsSource' means vertex shader source
-value's name 'fsSource' means fragment shader source 
-value's name 'vsPath' means vertex shader file path
-value's name 'fsPath' means fragment shader file path
+Here are some APIs that help to init Shader Class
+
+variable's name 'vsSource' means vertex shader source
+variable's name 'fsSource' means fragment shader source 
+variable's name 'vsPath' means vertex shader file path
+variable's name 'fsPath' means fragment shader file path
 */ 
 
 
@@ -84,29 +86,44 @@ function getVertexBuffer(gl,shaderVar) {
     return vertexBuffer;
 }
 
-/**
- * generate a shader object from shader infomation
- * @param gl context  
- * @param shaderInfo shader's infomation
- * @returns shader object promise
- */ 
-async function initShader(gl,shaderInfo) {
-    var vsPath = shaderInfo.vsPath;
-    var fsPath = shaderInfo.fsPath;
-    var shaderVar = shaderInfo.shaderVar;
-    
-    let vsSource = await getShaderString(vsPath);
-    let fsSource = await getShaderString(fsPath);
+function generateShader(gl, type, source) {
+    const shader = gl.createShader(type);
 
-    const shader = new Shader(gl,vsSource,fsSource);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
 
-    const shaderObject = {
-        program : shader.shaderProgram,
-        attribLocations : getShaderVarLocation(gl,shaderVar['attribute'],shader.shaderProgram),
-        uniformLocations : getShaderVarLocation(gl,shaderVar['uniform'],shader.shaderProgram),
-    };
-    return shaderObject;//is a Promise
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+    }
+
+    return shader;
 }
+ 
+function getShaderProgram (gl, vsSource, fsSource) {
+    if (!gl) {
+        alert("fail to initialize WebGL, check if your browser support it.");
+        return;
+    }
+
+    const vertexShader = this.generateShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.generateShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+    const shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+
+    // 创建失败，alert
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
+        return;
+    }
+
+    return shaderProgram;
+}
+
 
 
 

@@ -1,45 +1,58 @@
 /*
-primitives应当是一个数组，里面存放了各种几何对象（PO : primitive object）
-一个典型的几何对象应当包含以下字段：
-
-eg: a point's PO
-{
-    type : 'point',
-    data : {
-        aPos : [
-            [1,0]
-        ],
-        aColor : [
-            [0.5,0.5,0.5]
-        ]
-    }
-}
-eg: a polygon's PO
-{
-    type : 'polygon',
-    data : {
-        aPos : [
-            [1,0],
-            [0,1],
-            [0.5,0.5],
-        ],
-        aColor : [
-            [0.5,0.5,0.5],
-            [0.5,0.5,0.5],
-            [0.5,0.5,0.5],
-        ]
-    }
-}
-当然，我这里的设想是，data对象的键名称和着色器的变量名保持一致，可能需要专门写一个构造primitives的函数？
+Here are some APIs that help to draw primitives on canvas
 
 */
 
-function draw(gl,shader,/*drawType,uniformOperation,*/primitives) {
-    // gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-    // gl.clearDepth(1.0);                 // Clear everything
-    // gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-    // gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+var isPolygonBeingDrawn = false;
+var drawType = 'point';
+
+function drawPoint() {
+    drawType='point';
+    isPolygonBeingDrawn=false;
+}
+
+function drawPolygon() {
+    drawType='polygon';
+    isPolygonBeingDrawn=false;
+}
+
+function initCanvas(canvas){
+    const gl = canvas.getContext('webgl');
+    const shader = new Shader(
+        gl,
+        './shaderSrc/vs.glsl',
+        './shaderSrc/fs.glsl',
+        ['aPos','aColor'],
+        [],
+    )
+    canvas.onclick = function(event){
+        if(drawType == 'point'){
+            var pointInfo = {
+                aPos : [getMousePos(canvas,event)],
+                aColor : [rgb(128,209,200)],
+            }
+            shader.addPrimitive('point',pointInfo);
+        }
+        else if(drawType == 'polygon'){
+            if(!isPolygonBeingDrawn){
+                var polygonInfo = {
+                    aPos : [getMousePos(canvas,event)],
+                    aColor : [rgb(128,128,128)],
+                }
+                shader.addPrimitive('polygon',polygonInfo);
+                isPolygonBeingDrawn = true;
+            }
+            else{
+                shader.addDataToTopPrimitive('aPos',getMousePos(canvas,event));
+                shader.addDataToTopPrimitive('aColor',rgb(128,128,128));
+            }
+        }
+        draw(gl,shader);
+    }
+}
+
+function draw(gl,shader) {
     var glTypeMap = {
         point : gl.POINTS,
         polyline : gl.LINE_STRIP,
@@ -48,8 +61,8 @@ function draw(gl,shader,/*drawType,uniformOperation,*/primitives) {
         region : gl.TRIANGLE_STRIP,
     }
 
-    for(var i = 0; i < primitives.length; ++i){
-        var primitiveObject = primitives[i];
+    for(var i = 0; i < shader.primitives.length; ++i){
+        var primitiveObject = shader.primitives[i];
         var primitiveBuffers = getVertexBuffer(gl,primitiveObject.data);
         var primitiveVarNames = Object.keys(primitiveBuffers);
 
@@ -65,20 +78,19 @@ function draw(gl,shader,/*drawType,uniformOperation,*/primitives) {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, bufferObject.buffer);
             gl.vertexAttribPointer(
-                shader.attribLocations[varName],
+                shader.attributeLocations[varName],
                 dimension,
                 type,
                 normalize,
                 stride,
                 offset);
-            gl.enableVertexAttribArray(shader.attribLocations[varName]);
+            gl.enableVertexAttribArray(shader.attributeLocations[varName]);
         }
 
         gl.useProgram(shader.program);
         // if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
 
         {
-            // console.log('drawType:'+primitiveObject.type);
             const glDrawType = glTypeMap[primitiveObject.type]
             const offset = 0;
             const vertexCount = primitiveBuffers[primitiveVarNames[0]].vertexNum;
@@ -87,44 +99,7 @@ function draw(gl,shader,/*drawType,uniformOperation,*/primitives) {
             //unbind
             gl.bindBuffer(gl.ARRAY_BUFFER,null);
         }
-
-        
-        
-    }
-
-
-
-    // for(var i = 0; i < attributeNameArray.length; i++){
-    //     var attributeValueBuffer = shader.vertexAttributeValues[attributeNameArray[i]];
-    //     const dimension = attributeValueBuffer.dimension;
-    //     const type = gl.FLOAT;
-    //     const normalize = false;
-    //     const stride = 0;
-    //     const offset = 0;
-
-    //     gl.bindBuffer(gl.ARRAY_BUFFER, attributeValueBuffer.buffer);
-    //     gl.vertexAttribPointer(
-    //         shader.attribLocations[attributeNameArray[i]],
-    //         dimension,
-    //         type,
-    //         normalize,
-    //         stride,
-    //         offset);
-    //     gl.enableVertexAttribArray(shader.attribLocations[attributeNameArray[i]]);
-    // }
-
-    // gl.useProgram(shader.program);
-    // if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
-
-    // {
-    //     console.log('drawType:'+drawType);
-    //     const glDrawType = glTypeMap[drawType];
-    //     const offset = 0;
-    //     const vertexCount = shader.vertexAttributeValues[attributeNameArray[0]].vertexNum;
-    //     gl.drawArrays(glDrawType, offset, vertexCount);
-    // }
-    
-    
+    }    
 }
 
 function getMousePos(canvas, event) {
@@ -138,6 +113,16 @@ function rgb(r,g,b) {
     return [r/255,g/255,b/255];
 }
 
+function clearCanvas(canvas) {
+    var gl = canvas.getContext('webgl');
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
+    gl.clearDepth(1.0);                 // Clear everything
+    gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+}
+
+//rejected API
 function drawUrlToCanvas(url,canvas){
     /////////////////////////utils/////////////////////////
     var createShader=function(gl, type, source) {
@@ -265,54 +250,3 @@ function drawUrlToCanvas(url,canvas){
     }   
 
 }
-
-
-function renderPrimitive(canvas,primitiveType,color) {
-    var aPos = [];
-    var aColor = [];
-    
-    canvas.onclick = function(event) {
-        aPos.push(getMousePos(canvas, event));
-        aColor.push(color);
-        const gl = canvas.getContext('webgl');
-        const primitiveShader = new ShaderInfo(
-            './shaderSrc/vs.glsl',
-            './shaderSrc/fs.glsl',
-            {aPos:aPos,aColor:aColor},
-            {}
-        );
-        initShader(gl,primitiveShader).then((shader)=>{
-            draw(gl,shader,primitiveType,()=>{});
-        });
-    }
-    
-}
-
-function clearCanvas(canvas) {
-    var gl = canvas.getContext('webgl');
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
-    gl.clearDepth(1.0);                 // Clear everything
-    gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-}
-
-// function initCanvas(canvas) {
-//     var aPos = [];
-//     var aColor = [];
-    
-//     canvas.onclick = function(event) {
-//         aPos.push(getMousePos(canvas, event));
-//         aColor.push(color);
-//         const gl = canvas.getContext('webgl');
-//         const primitiveShader = new ShaderInfo(
-//             './shaderSrc/vs.glsl',
-//             './shaderSrc/fs.glsl',
-//             {aPos:aPos,aColor:aColor},
-//             {}
-//         );
-//         initShader(gl,primitiveShader).then((shader)=>{
-//             draw(gl,shader,primitiveType,()=>{});
-//         });
-//     }
-// }
