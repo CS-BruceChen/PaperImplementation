@@ -50,6 +50,7 @@ function initCanvas(canvas){
         }
         draw(gl,shader);
     }
+    return shader;
 }
 
 function draw(gl,shader) {
