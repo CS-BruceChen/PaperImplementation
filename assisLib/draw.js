@@ -64,13 +64,13 @@ function draw(gl,shader,fbo,width,height) {
         polyline : gl.LINE_STRIP,
         polygon : gl.LINE_LOOP,
         line : gl.LINES,
-        region : gl.TRIANGLE_STRIP,
+        region : gl.TRIANGLES,
     }
 
-    if(fbo){
-        console.log(shader);
-        console.log(shader.attributeLocations);
-    }
+    // if(fbo){
+    //     console.log(shader);
+    //     console.log(shader.attributeLocations);
+    // }
 
 
     for(var i = 0; i < shader.primitives.length; ++i){
