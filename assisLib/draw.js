@@ -100,8 +100,10 @@ function draw(gl,shader,fbo,width,height) {
         }
 
         gl.useProgram(shader.program);
-        // if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
-        // if(shader.)
+        
+        // if(Object.keys(shader.uniformLocations).length > 0 && !uniformOperation){
+        //     uniformOperation(shader.uniformLocations);
+        // }
 
         {
             const glDrawType = glTypeMap[primitiveObject.type]
@@ -109,7 +111,8 @@ function draw(gl,shader,fbo,width,height) {
             const vertexCount = primitiveBuffers[primitiveVarNames[0]].vertexNum;
             
             if(fbo){
-                gl.bindFramebuffer(gl.FRAMEBUFFER,fbo)
+                gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.fb);
+                // gl.bindTexture(gl.TEXTURE_2D,fbo.tx);
                 gl.viewport(0,0,width,height);
             }
             
@@ -118,6 +121,7 @@ function draw(gl,shader,fbo,width,height) {
 
             //unbind
             gl.bindBuffer(gl.ARRAY_BUFFER,null);
+            // gl.bindFramebuffer(gl.FRAMEBUFFER,null);
             gl.bindTexture(gl.TEXTURE_2D,null);
         }
     }    
@@ -134,9 +138,9 @@ function rgb(r,g,b) {
     return [r/255,g/255,b/255];
 }
 
-function clearCanvas(canvas) {
-    var gl = canvas.getContext('webgl');
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
+function clearCanvas(gl) {
+    // var gl = canvas.getContext('webgl');
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things

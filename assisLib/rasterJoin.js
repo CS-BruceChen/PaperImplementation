@@ -43,10 +43,11 @@ function initFramebufferObject(gl,width,height,debug) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+    // framebuffer.texture = texture;
     // 新建渲染缓冲区对象作为帧缓冲区的深度缓冲区对象
     // var depthBuffer = gl.createRenderbuffer();
     // gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-    // gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);//?也许需要适配视口？暂时先定为256x256
+    // gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
@@ -63,9 +64,18 @@ function initFramebufferObject(gl,width,height,debug) {
     gl.bindTexture(gl.TEXTURE_2D, null);
     // gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-    return framebuffer;
+    return {fb : framebuffer,tx : texture};
 }
 
+function getQueryResult(gl,width,height){
+    var pixelsPolygon = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixelsPolygon);
+    var sumPolygon=0;
+    for(var i=0;i < pixelsPolygon.length;++i){
+        sumPolygon += pixelsPolygon[i];
+    }
+    console.log(sumPolygon/255 - width * height);
+}
 
 async function rasterJoin(gl,primitives){
     const width = 1000;
@@ -100,36 +110,12 @@ async function rasterJoin(gl,primitives){
 
     polygonShader.inputPrimitives(polygons);
 
-    
-    //create Texture and fbo
+    var fboForPoint = initFramebufferObject(gl,width,height,false);
 
-    // var texture = gl.createTexture();
-    // gl.bindTexture(gl.TEXTURE_2D, texture);
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    // var fbo = gl.createFramebuffer();
-    // gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
-    // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-    // //unbind
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // gl.bindTexture(gl.TEXTURE_2D, null);
-
-
-    
+    clearCanvas(gl);
 
     //step I : draw points on fbo 
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, fully opaque
-    gl.clearDepth(1.0);                 // Clear everything  must be 1.0
-    gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    var fbo = initFramebufferObject(gl,width,height,false);
-    draw(gl,pointShader,fbo,width,height);
+    draw(gl,pointShader,fboForPoint,width,height);
 
 
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -149,30 +135,31 @@ async function rasterJoin(gl,primitives){
 
 
     //step2 : draw polygon on fbo
-    gl.useProgram(polygonShader.program);
-    gl.uniform1i(polygonShader.uniformLocations['uFBO'],0);
+    // gl.useProgram(polygonShader.program);
+    // gl.uniform1i(polygonShader.uniformLocations['uFBO'],0);
 
     // console.log(polygonShader);
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     // gl.viewport(0,0,width,height);
 
-    draw(gl,polygonShader,fbo,width,height);
+    // gl.activeTexture(gl.TEXTURE0);
+    // gl.bindTexture(gl.TEXTURE_2D,fboForPoint.tx);
+    gl.useProgram(polygonShader.program);
+    gl.uniform1i(polygonShader.uniformLocations['uFBO'],0);
+    // gl.bindFramebuffer(gl.FRAMEBUFFER,null);
 
+    var fboForPolygon = initFramebufferObject(gl,width,height,false);
+
+    draw(gl,polygonShader,fboForPoint,width,height);
+
+
+    getQueryResult(gl,width,height);
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    var pixelsPolygon = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixelsPolygon);
-    // console.log(pixels);
-    
-    var sumPolygon=0;
-    for(var i=0;i < pixelsPolygon.length;++i){
-        sumPolygon += pixelsPolygon[i];
-    }
     // console.log(sumPolygon);
     // if(sumPolygon == 0) sumPolygon=0;
     // else sumPolygon = sumPolygon/255 - width*height + 1; 
     // console.log(sum);
-    console.log(sumPolygon/255 - width * height);
-
+    // console.log(sumPolygon/255 - width * height);
     // console.log(sumPoint-sumPolygon);
 
 }

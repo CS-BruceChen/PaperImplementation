@@ -8,6 +8,6 @@ function RasterJoin(){
 
 async function main() { 
     var canvas = CANVAS;
-    clearCanvas(canvas);
+    clearCanvas(canvas.getContext('webgl'));
     canvasShader = await initCanvas(canvas);
 }
