@@ -90,7 +90,9 @@ class Shader {
         this.primitives[len-1].data[varName].push(value);
     }
 
-    
+    inputPrimitives(newPrimitives){
+        this.primitives = newPrimitives;
+    }
 
     
 };
