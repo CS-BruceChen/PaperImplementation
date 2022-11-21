@@ -17,8 +17,8 @@ class Shader {
         
         //init shader's member
         this.program = program;
-        this.attributeLocations = getShaderVarLocation(gl,attributeVar,program);
-        this.uniformLocations = getShaderVarLocation(gl,uniformVar,program);
+        this.attributeLocations = getShaderVarLocation(gl,attributeVar,program,'attribute');
+        this.uniformLocations = getShaderVarLocation(gl,uniformVar,program,'uniform');
     }
 
     /*

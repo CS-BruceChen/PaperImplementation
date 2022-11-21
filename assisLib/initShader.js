@@ -30,11 +30,12 @@ async function getShaderString(filename) {
     return val;
 }
 
-function getShaderVarLocation(gl,varNameArray,shaderProgram){
+function getShaderVarLocation(gl,varNameArray,shaderProgram,varType){
     var varLocation = {};
     if(varNameArray.length != 0 && typeof(varNameArray)!="undefined") {
         for(var i = 0; i < varNameArray.length; i++){
-            varLocation[varNameArray[i]] = gl.getAttribLocation(shaderProgram,varNameArray[i]);
+            if(varType=='attribute') varLocation[varNameArray[i]] = gl.getAttribLocation(shaderProgram,varNameArray[i]);
+            else if(varType=='uniform') varLocation[varNameArray[i]] = gl.getUniformLocation(shaderProgram,varNameArray[i]);
         }
     }
     return varLocation;
