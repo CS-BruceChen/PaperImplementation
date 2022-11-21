@@ -2,7 +2,7 @@
 Here are some APIs that help to draw primitives on canvas
 
 */
-
+// function sleep (time) {return new Promise((resolve) => setTimeout(resolve, time));}
 
 var isPolygonBeingDrawn = false;
 var drawType = 'point';
@@ -53,7 +53,7 @@ function initCanvas(canvas){
     return shader;
 }
 
-function draw(gl,shader) {
+function draw(gl,shader,fbo,width,height) {
     var glTypeMap = {
         point : gl.POINTS,
         polyline : gl.LINE_STRIP,
@@ -61,6 +61,13 @@ function draw(gl,shader) {
         line : gl.LINES,
         region : gl.TRIANGLE_STRIP,
     }
+
+    if(fbo){
+        console.log(shader);
+        console.log(shader.attributeLocations);
+    }
+    
+
 
     for(var i = 0; i < shader.primitives.length; ++i){
         var primitiveObject = shader.primitives[i];
@@ -96,6 +103,11 @@ function draw(gl,shader) {
             const offset = 0;
             const vertexCount = primitiveBuffers[primitiveVarNames[0]].vertexNum;
             gl.drawArrays(glDrawType, offset, vertexCount);
+
+            if(fbo){
+                gl.bindFramebuffer(gl.FRAMEBUFFER,fbo)
+                gl.viewport(0,0,width,height);
+            }
 
             //unbind
             gl.bindBuffer(gl.ARRAY_BUFFER,null);
