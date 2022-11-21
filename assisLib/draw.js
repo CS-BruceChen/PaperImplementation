@@ -101,17 +101,20 @@ function draw(gl,shader,fbo,width,height) {
 
         gl.useProgram(shader.program);
         // if(!uniformOperation) uniformOperation(gl,shader.uniformLocations);
+        // if(shader.)
 
         {
             const glDrawType = glTypeMap[primitiveObject.type]
             const offset = 0;
             const vertexCount = primitiveBuffers[primitiveVarNames[0]].vertexNum;
-            gl.drawArrays(glDrawType, offset, vertexCount);
-
+            
             if(fbo){
                 gl.bindFramebuffer(gl.FRAMEBUFFER,fbo)
                 gl.viewport(0,0,width,height);
             }
+            
+            //draw
+            gl.drawArrays(glDrawType, offset, vertexCount);
 
             //unbind
             gl.bindBuffer(gl.ARRAY_BUFFER,null);

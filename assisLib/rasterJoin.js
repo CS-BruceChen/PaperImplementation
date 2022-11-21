@@ -133,16 +133,17 @@ async function rasterJoin(gl,primitives){
 
 
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    var pixelsPoint = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixelsPoint);
+    // var pixelsPoint = new Uint8Array(width * height * 4);
+    // gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixelsPoint);
     // console.log(pixels);
     
-    var sumPoint=0;
-    for(var i=0;i < pixelsPoint.length;++i){
-        sumPoint += pixelsPoint[i];
-    }
-    if(sumPoint == 0) sumPoint=0;
-    else sumPoint = sumPoint/255 - width*height + 1; 
+    // var sumPoint=0;
+    // for(var i=0;i < pixelsPoint.length;++i){
+    //     sumPoint += pixelsPoint[i];
+    // }
+    // console.log(sumPoint);
+    // if(sumPoint == 0) sumPoint=0;
+    // else sumPoint = sumPoint/255 - width*height + 1; 
     // console.log(sum);
     // console.log(sum/255 - width*height + 1);
 
@@ -153,9 +154,9 @@ async function rasterJoin(gl,primitives){
 
     // console.log(polygonShader);
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // gl.viewport(0,0,width,height);
+
     draw(gl,polygonShader,fbo,width,height);
-
-
 
     // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     var pixelsPolygon = new Uint8Array(width * height * 4);
@@ -166,15 +167,12 @@ async function rasterJoin(gl,primitives){
     for(var i=0;i < pixelsPolygon.length;++i){
         sumPolygon += pixelsPolygon[i];
     }
-    if(sumPolygon == 0) sumPolygon=0;
-    else sumPolygon = sumPolygon/255 - width*height + 1; 
+    // console.log(sumPolygon);
+    // if(sumPolygon == 0) sumPolygon=0;
+    // else sumPolygon = sumPolygon/255 - width*height + 1; 
     // console.log(sum);
-    // console.log(sum/255 - width*height + 1);
+    console.log(sumPolygon/255 - width * height);
 
-    console.log(sumPoint-sumPolygon);
-    
-
-    
-    
+    // console.log(sumPoint-sumPolygon);
 
 }
