@@ -115,6 +115,7 @@ function draw(gl,shader,fbo,width,height) {
 
             //unbind
             gl.bindBuffer(gl.ARRAY_BUFFER,null);
+            gl.bindTexture(gl.TEXTURE_2D,null);
         }
     }    
 }
