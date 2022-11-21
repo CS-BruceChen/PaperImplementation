@@ -1,4 +1,4 @@
-var canvasShader = null;
+let canvasShader = null;
 const CANVAS = document.querySelector('#canvas');
 
 function RasterJoin(){
@@ -8,8 +8,9 @@ function RasterJoin(){
     rasterJoin(gl,canvasShader.primitives);
 }
 
-function main() { 
+async function main() { 
     var canvas = CANVAS;
     clearCanvas(canvas);
-    canvasShader = initCanvas(canvas);
+    canvasShader = await initCanvas(canvas);
+    console.log(canvasShader);
 }

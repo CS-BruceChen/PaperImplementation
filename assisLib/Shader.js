@@ -1,24 +1,28 @@
 class Shader {
     constructor(gl,vsPath, fsPath, attributeVar, uniformVar) {
-        this.initShader(gl,vsPath, fsPath, attributeVar, uniformVar);
+        this.gl = gl;
+        this.vsPath = vsPath;
+        this.fsPath = fsPath;
+        this.attributeVar = attributeVar;
+        this.uniformVar = uniformVar;
         this.primitives = [];
     }
 
-    async initShader(gl,vsPath, fsPath, attributeVar, uniformVar){
+    async initShader(){
         //type check
-        if (Object.prototype.toString.call(attributeVar) != '[object Array]' || Object.prototype.toString.call(uniformVar) != '[object Array]') {
+        if (Object.prototype.toString.call(this.attributeVar) != '[object Array]' || Object.prototype.toString.call(this.uniformVar) != '[object Array]') {
             alert("ShaderInfo ERR::wrong type, parameters should be Array");
             return;
         }
 
-        let vsSource = await getShaderString(vsPath);
-        let fsSource = await getShaderString(fsPath);
-        var program = getShaderProgram(gl,vsSource,fsSource);
+        let vsSource = await getShaderString(this.vsPath);
+        let fsSource = await getShaderString(this.fsPath);
+        var program = getShaderProgram(this.gl,vsSource,fsSource);
         
-        //init shader's member
         this.program = program;
-        this.attributeLocations = getShaderVarLocation(gl,attributeVar,program,'attribute');
-        this.uniformLocations = getShaderVarLocation(gl,uniformVar,program,'uniform');
+        this.attributeLocations = getShaderVarLocation(this.gl,this.attributeVar,program,'attribute');
+        this.uniformLocations = getShaderVarLocation(this.gl,this.uniformVar,program,'uniform');
+        
     }
 
     /*

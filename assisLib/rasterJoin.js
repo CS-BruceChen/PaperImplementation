@@ -12,7 +12,7 @@ function getPointsAndPolygons(primitives){
     return {points:points,polygons:polygons};
 }
 
-function rasterJoin(gl,primitives){
+async function rasterJoin(gl,primitives){
     const width = 1000;
     const height = 600;
 
@@ -29,6 +29,8 @@ function rasterJoin(gl,primitives){
         [],
     );
 
+    await pointShader.initShader();
+
     pointShader.inputPrimitives(points);
 
     const polygonShader = new Shader(
@@ -39,8 +41,11 @@ function rasterJoin(gl,primitives){
         ['uFBO']
     );
 
+    await polygonShader.initShader();
+
     polygonShader.inputPrimitives(polygons);
 
+    
     //create Texture and fbo
 
     var texture = gl.createTexture();
@@ -64,6 +69,10 @@ function rasterJoin(gl,primitives){
 
     var pixels = new Uint8Array(width * height * 4);
     gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    console.log(pixels);
+    var sum=0;
+    for(var i=0;i<pixels.length;++i){
+        sum+=pixels[i];
+    }
+    console.log(sum);
 
 }

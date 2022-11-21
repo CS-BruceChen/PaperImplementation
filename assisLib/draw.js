@@ -17,7 +17,7 @@ function drawPolygon() {
     isPolygonBeingDrawn=false;
 }
 
-function initCanvas(canvas){
+async function initCanvas(canvas){
     const gl = canvas.getContext('webgl');
     const shader = new Shader(
         gl,
@@ -26,30 +26,35 @@ function initCanvas(canvas){
         ['aPos','aColor'],
         [],
     )
-    canvas.onclick = function(event){
-        if(drawType == 'point'){
-            var pointInfo = {
-                aPos : [getMousePos(canvas,event)],
-                aColor : [rgb(128,209,200)],
-            }
-            shader.addPrimitive('point',pointInfo);
-        }
-        else if(drawType == 'polygon'){
-            if(!isPolygonBeingDrawn){
-                var polygonInfo = {
+
+    shader.initShader().then(()=>{
+        canvas.onclick = function(event){
+            if(drawType == 'point'){
+                var pointInfo = {
                     aPos : [getMousePos(canvas,event)],
-                    aColor : [rgb(128,128,128)],
+                    aColor : [rgb(128,209,200)],
                 }
-                shader.addPrimitive('polygon',polygonInfo);
-                isPolygonBeingDrawn = true;
+                shader.addPrimitive('point',pointInfo);
             }
-            else{
-                shader.addDataToTopPrimitive('aPos',getMousePos(canvas,event));
-                shader.addDataToTopPrimitive('aColor',rgb(128,128,128));
+            else if(drawType == 'polygon'){
+                if(!isPolygonBeingDrawn){
+                    var polygonInfo = {
+                        aPos : [getMousePos(canvas,event)],
+                        aColor : [rgb(128,128,128)],
+                    }
+                    shader.addPrimitive('polygon',polygonInfo);
+                    isPolygonBeingDrawn = true;
+                }
+                else{
+                    shader.addDataToTopPrimitive('aPos',getMousePos(canvas,event));
+                    shader.addDataToTopPrimitive('aColor',rgb(128,128,128));
+                }
             }
+            draw(gl,shader);
         }
-        draw(gl,shader);
-    }
+    });
+
+    
     return shader;
 }
 
@@ -66,7 +71,6 @@ function draw(gl,shader,fbo,width,height) {
         console.log(shader);
         console.log(shader.attributeLocations);
     }
-    
 
 
     for(var i = 0; i < shader.primitives.length; ++i){
