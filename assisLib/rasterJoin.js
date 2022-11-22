@@ -67,6 +67,8 @@ function initFramebufferObject(gl,width,height,debug) {
     return {fb : framebuffer,tx : texture};
 }
 
+// function getFBO()
+
 function getQueryResult(gl,width,height){
     var pixelsPolygon = new Uint8Array(width * height * 4);
     gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixelsPolygon);
@@ -74,7 +76,8 @@ function getQueryResult(gl,width,height){
     for(var i=0;i < pixelsPolygon.length;++i){
         sumPolygon += pixelsPolygon[i];
     }
-    console.log(sumPolygon/255 - width * height);
+    // console.log(sumPolygon/255 - width * height);
+    return sumPolygon/255 - width * height;
 }
 
 async function rasterJoin(gl,primitives){
@@ -108,58 +111,58 @@ async function rasterJoin(gl,primitives){
 
     await polygonShader.initShader();
 
-    polygonShader.inputPrimitives(polygons);
+    for(var i=0; i<polygons.length; ++i){
+        var eachPolygon = [polygons[i]];
+        polygonShader.inputPrimitives(eachPolygon);
+        clearCanvas(gl);
 
-    var fboForPoint = initFramebufferObject(gl,width,height,false);
+        //step I : draw points on fbo 
+        var framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);
 
-    clearCanvas(gl);
+            var point = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, point);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D, point,0);
+            gl.bindTexture(gl.TEXTURE_2D,null);
 
-    //step I : draw points on fbo 
-    draw(gl,pointShader,fboForPoint,width,height);
+            if (gl.FRAMEBUFFER_COMPLETE !== gl.checkFramebufferStatus(gl.FRAMEBUFFER)) {
+                console.log('Frame buffer object is incomplete: ' + gl.checkFramebufferStatus(gl.FRAMEBUFFER).toString());
+                return;
+            }
 
+            // gl.drawBuffers([gl.COLOR_ATTACHMENT0,gl.NONE]);
+            gl.viewport(0,0,width,height);
+            draw(gl,pointShader);
 
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // var pixelsPoint = new Uint8Array(width * height * 4);
-    // gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixelsPoint);
-    // console.log(pixels);
+            var allPoint = getQueryResult(gl,width,height);//this step prove that the point num is right;
+
+            // gl.useProgram(polygonShader.program);
+            // gl.activeTexture(gl.TEXTURE0);
+            // gl.bindTexture(gl.TEXTURE_2D,point);
+            // gl.uniform1i(polygonShader.uniformLocations['uFBO'],0);
+
+            
+
+            if (gl.FRAMEBUFFER_COMPLETE !== gl.checkFramebufferStatus(gl.FRAMEBUFFER)) {
+                console.log('Frame buffer object is incomplete: ' + gl.checkFramebufferStatus(gl.FRAMEBUFFER).toString());
+                return;
+            }
+
+            // gl.drawBuffers([gl.NONE,gl.COLOR_ATTACHMENT1]);
+            gl.viewport(0,0,width,height);
+            draw(gl,polygonShader);
+
+            var outPoint = getQueryResult(gl,width,height);
+            console.log('Polygon' + i + 'has ' + (allPoint-outPoint) + ' points inside'); 
+            
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+
+    }
     
-    // var sumPoint=0;
-    // for(var i=0;i < pixelsPoint.length;++i){
-    //     sumPoint += pixelsPoint[i];
-    // }
-    // console.log(sumPoint);
-    // if(sumPoint == 0) sumPoint=0;
-    // else sumPoint = sumPoint/255 - width*height + 1; 
-    // console.log(sum);
-    // console.log(sum/255 - width*height + 1);
-
-
-    //step2 : draw polygon on fbo
-    // gl.useProgram(polygonShader.program);
-    // gl.uniform1i(polygonShader.uniformLocations['uFBO'],0);
-
-    // console.log(polygonShader);
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // gl.viewport(0,0,width,height);
-
-    // gl.activeTexture(gl.TEXTURE0);
-    // gl.bindTexture(gl.TEXTURE_2D,fboForPoint.tx);
-    gl.useProgram(polygonShader.program);
-    gl.uniform1i(polygonShader.uniformLocations['uFBO'],0);
-    // gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-
-    var fboForPolygon = initFramebufferObject(gl,width,height,false);
-
-    draw(gl,polygonShader,fboForPoint,width,height);
-
-
-    getQueryResult(gl,width,height);
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // console.log(sumPolygon);
-    // if(sumPolygon == 0) sumPolygon=0;
-    // else sumPolygon = sumPolygon/255 - width*height + 1; 
-    // console.log(sum);
-    // console.log(sumPolygon/255 - width * height);
-    // console.log(sumPoint-sumPolygon);
-
 }

@@ -18,7 +18,7 @@ function drawPolygon() {
 }
 
 async function initCanvas(canvas){
-    const gl = canvas.getContext('webgl');
+    const gl = canvas.getContext('webgl2');
     const shader = new Shader(
         gl,
         './shaderSrc/vs.glsl',
@@ -58,7 +58,7 @@ async function initCanvas(canvas){
     return shader;
 }
 
-function draw(gl,shader,fbo,width,height) {
+function draw(gl,shader) {
     var glTypeMap = {
         point : gl.POINTS,
         polyline : gl.LINE_STRIP,
@@ -110,19 +110,11 @@ function draw(gl,shader,fbo,width,height) {
             const offset = 0;
             const vertexCount = primitiveBuffers[primitiveVarNames[0]].vertexNum;
             
-            if(fbo){
-                gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.fb);
-                // gl.bindTexture(gl.TEXTURE_2D,fbo.tx);
-                gl.viewport(0,0,width,height);
-            }
-            
             //draw
             gl.drawArrays(glDrawType, offset, vertexCount);
 
             //unbind
             gl.bindBuffer(gl.ARRAY_BUFFER,null);
-            // gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-            gl.bindTexture(gl.TEXTURE_2D,null);
         }
     }    
 }
@@ -192,7 +184,7 @@ function drawUrlToCanvas(url,canvas){
     //////////////////////////////////////////////////////
       
     // 将顶点的位置数据修改为：
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl2");
 
     const vertexShader = `
         attribute vec4 a_position;

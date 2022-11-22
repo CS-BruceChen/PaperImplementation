@@ -1,13 +1,16 @@
 let canvasShader = null;
 const CANVAS = document.querySelector('#canvas');
+const CANVASUNUSE = document.querySelector('#canvasUnuse');
 
 function RasterJoin(){
-    const gl = CANVAS.getContext('webgl');
-    rasterJoin(gl,canvasShader.primitives);
+    const glUnuse = CANVASUNUSE.getContext('webgl2');//change to webgl ctx
+    rasterJoin(glUnuse,canvasShader.primitives);
+    // clearCanvas(gl);
+    
 }
 
 async function main() { 
     var canvas = CANVAS;
-    clearCanvas(canvas.getContext('webgl'));
+    clearCanvas(canvas.getContext('webgl2'));
     canvasShader = await initCanvas(canvas);
 }
