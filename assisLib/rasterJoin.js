@@ -111,6 +111,8 @@ async function rasterJoin(gl,primitives){
 
     await polygonShader.initShader();
 
+    var tips='';
+
     for(var i=0; i<polygons.length; ++i){
         var eachPolygon = [polygons[i]];
         polygonShader.inputPrimitives(eachPolygon);
@@ -158,11 +160,11 @@ async function rasterJoin(gl,primitives){
             draw(gl,polygonShader);
 
             var outPoint = getQueryResult(gl,width,height);
-            console.log('Polygon' + i + 'has ' + (allPoint-outPoint) + ' points inside'); 
-            
+            console.log('Polygon ' + i + ' has ' + (allPoint-outPoint) + ' points inside'); 
+            tips += 'Polygon ' + i + ' has ' + (allPoint-outPoint) + ' points inside' + '\n';
 
         gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-
     }
+    alert(tips);
     
 }
